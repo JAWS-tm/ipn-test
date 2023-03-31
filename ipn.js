@@ -1,48 +1,37 @@
 import express from "express";
-import axios from "./node_modules/axios/index.js";
+import { validateIpn } from "./utils.js";
 
 const router = express.Router();
 
-router.post("/", function (req, res) {
-  // Vérifier que la notification provient de PayPal
+router.post("/", express.raw({ type: "*/*" }), function (req, res) {
+  res.status(200).send("OK");
+  res.end();
+
   const body = req.body;
-  console.log("IPN request : ", req.body);
+  console.log("IPN request body : ", req.body);
 
-  res.sendStatus(200).end();
+  const isValid = validateIpn(body);
 
-
-  if (body && Object.prototype.hasOwnProperty.call(body, "txn_id")) {
-    console.log("2");
-
-    let data = "cmd=_notify-validate";
-    Object.keys(body).map((key) => {
-      data += `&${key}=${body[key]}`;
-    });
-
-    // Envoyer une requête de vérification à PayPal
-    axios
-      .post("https://ipnpb.sandbox.paypal.com/cgi-bin/webscr", data, {
-        headers: {
-          "Content-Length": data.length,
-        },
-      })
-      .then((response) => {
-        if (response.status === 200 && response.data.substring(0, 8) === "VERIFIED") {
-          // Vérifier que le statut du paiement est "Completed"
-          if (body.payment_status === "Completed") {
-            // Traiter le paiement
-            console.log("Paiement reçu");
-          } else {
-            console.log("Statut de paiement invalide");
-          }
-        } else {
-          console.log("IPN invalide");
-        }
-      });
-  } else {
-    console.log("IPN invalide");
+  if (!isValid) {
+    console.error("IPN invalid");
+    return;
   }
 
+  // Valid IPN => process content
+
+  // Vérifier que le statut du paiement est "Completed"
+  // if (body.payment_status === "Completed") {
+  //   // Traiter le paiement
+  //   console.log("Paiement reçu");
+  // } else {
+  //   console.log("Statut de paiement invalide");
+  // }
+
+  // if (body && Object.prototype.hasOwnProperty.call(body, "txn_id")) {
+  //   console.log("2");
+  // } else {
+  //   console.log("IPN invalide");
+  // }
 });
 
 export default router;

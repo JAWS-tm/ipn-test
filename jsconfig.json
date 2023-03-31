@@ -1,7 +1,8 @@
 {
-    "compilerOptions": {
-      "module": "ES2022",
-      "checkJs": true
-    },
-    "exclude": ["node_modules", "**/node_modules/*"]
-  }
+  "compilerOptions": {
+    "moduleResolution": "nodenext",
+    "module": "ES6",
+    "checkJs": true
+  },
+  "exclude": ["node_modules", "**/node_modules/*"]
+}
